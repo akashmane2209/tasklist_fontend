@@ -1,17 +1,20 @@
 import React, { Component } from "react";
 import { Row, Col } from "reactstrap";
+import { Alert, message } from "antd";
 import SimpleReactValidator from "simple-react-validator";
 import { Redirect } from "react-router-dom";
 import { connect } from "react-redux";
 import { loginAction } from "../../actions/authActions.js";
-import { loginUser } from "../../apis/auth";
+import { loginUser } from "../../apis/user";
 import "./Login.css";
 
 class Login extends Component {
   constructor() {
     super();
     this.validator = new SimpleReactValidator({
-      element: message => <div className="text-danger">{message}</div>,
+      element: message => (
+        <Alert message={message} className="mb-2" type="error" />
+      ),
       autoForceUpdate: this
     });
   }
@@ -41,9 +44,10 @@ class Login extends Component {
         const response = await loginUser(credentials);
         const { user, token } = response.data;
         this.props.loginAction(user, token);
-        //   this.props.history.push("/dashboard");
+        this.props.history.push("/dashboard/workspace");
+        message.success("Login Successful");
       } catch (e) {
-        alert("Incorrect Email ID or Password");
+        message.error("Invalid email or password");
         console.log(e);
       }
     } else {
@@ -150,8 +154,7 @@ class Login extends Component {
         </div>
       );
     } else {
-      // showLogin = <Redirect to="/dashboard" />;
-      showLogin = <h1>Welcome</h1>;
+      showLogin = <Redirect to="/dashboard/workspace" />;
     }
     return <div>{showLogin}</div>;
   }
