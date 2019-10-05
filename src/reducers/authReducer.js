@@ -16,6 +16,6 @@ export default (state = defaultState, action) => {
         token: null
       });
     default:
-      return defaultState;
+      return state;
   }
 };

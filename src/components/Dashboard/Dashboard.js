@@ -1,5 +1,4 @@
 import React, { Component } from "react";
-
 //MODULES
 import { Link, Switch, Route } from "react-router-dom";
 import { connect } from "react-redux";
@@ -15,7 +14,19 @@ import Project from "../Project/Project";
 import Team from "../Team/Team";
 import { deleteUser } from "../../apis/storage";
 import { logoutAction } from "../../actions/authActions";
+import { getAllWorkspaces } from "../../apis/workspace";
+import { getAllWorkSpacesAction } from "../../actions/workspaceActions";
 
+import { getAllPorjects } from "../../apis/project";
+import { getAllProjectsAction } from "../../actions/projectActions";
+
+import { getAllTeams } from "../../apis/team";
+import { getAllTeamsAction } from "../../actions/teamActions";
+
+import { getAllTasksAction } from "../../actions/taskActions";
+import { getAllTasks } from "../../apis/task";
+
+import Task from "../Task/Task";
 const { Header, Content, Footer, Sider } = Layout;
 const { SubMenu } = Menu;
 
@@ -25,7 +36,16 @@ class Dashboard extends Component {
     loginCollapse: false
   };
 
-  componentDidMount() {}
+  componentDidMount = async () => {
+    let response = await getAllWorkspaces();
+    this.props.getAllWorkSpacesAction(response.data.workspaces);
+    response = await getAllPorjects();
+    this.props.getAllProjectsAction(response.data.projects);
+    response = await getAllTeams();
+    this.props.getAllTeamsAction(response.data.teams);
+    response = await getAllTasks();
+    this.props.getAllTasksAction(response.data.tasks);
+  };
 
   handleMenuClick = e => {
     message.success("Logout Successful");
@@ -93,11 +113,14 @@ class Dashboard extends Component {
                 </span>
               }
             >
-              <Menu.Item key="5">
-                <span>Workspace 1</span>
-                <Link to="/dashboard/workspace" />
-              </Menu.Item>
-              <Menu.Item key="6">Workspace 2</Menu.Item>
+              {this.props.workspaces.map(workspace => {
+                return (
+                  <Menu.Item key={workspace._id}>
+                    <span>{workspace.title}</span>
+                    <Link to={"/dashboard/workspace/" + workspace._id} />
+                  </Menu.Item>
+                );
+              })}
             </SubMenu>
             <SubMenu
               onTitleClick={this.navigateTo}
@@ -109,8 +132,14 @@ class Dashboard extends Component {
                 </span>
               }
             >
-              <Menu.Item key="5">Project 1</Menu.Item>
-              <Menu.Item key="6">Project 2</Menu.Item>
+              {this.props.projects.map(project => {
+                return (
+                  <Menu.Item key={project._id}>
+                    <span>{project.title}</span>
+                    <Link to={"/dashboard/project/" + project._id} />
+                  </Menu.Item>
+                );
+              })}
             </SubMenu>
 
             <SubMenu
@@ -152,9 +181,11 @@ class Dashboard extends Component {
           </Header>
           <Content style={{ margin: "0 16px" }}>
             <Switch>
-              <Route path="/dashboard/workspace" component={Workspace} />
+              <Route exact path="/dashboard/workspace" component={Workspace} />
               <Route exact path="/dashboard/project" component={Project} />
               <Route exact path="/dashboard/team" component={Team} />
+              <Route path="/dashboard/workspace/:id" component={Project} />
+              <Route path="/dashboard/project/:id" component={Task} />
             </Switch>
           </Content>
 
@@ -167,7 +198,18 @@ class Dashboard extends Component {
   }
 }
 
+const mapStateToProps = ({ workspace, project }) => ({
+  workspaces: workspace.workspace,
+  projects: project.project
+});
+
 export default connect(
-  null,
-  { logoutAction }
+  mapStateToProps,
+  {
+    logoutAction,
+    getAllWorkSpacesAction,
+    getAllProjectsAction,
+    getAllTeamsAction,
+    getAllTasksAction
+  }
 )(Dashboard);

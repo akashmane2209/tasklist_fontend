@@ -104,7 +104,7 @@ class Login extends Component {
           <div className="content d-flex align-items-center justify-content-center">
             <Row className="">
               <Col>
-                <form>
+                <form className="form">
                   <p className="text-center" style={{ fontSize: "2rem" }}>
                     Welcome to <b>TaskList</b>
                   </p>
@@ -113,6 +113,7 @@ class Login extends Component {
                   </p>
                   <div className="form-content">
                     <input
+                      className="form-input"
                       id="email"
                       placeholder="Email ID"
                       type="text"
@@ -126,6 +127,7 @@ class Login extends Component {
                     )}
 
                     <input
+                      className="form-input"
                       id="password"
                       placeholder="Password"
                       type="password"
