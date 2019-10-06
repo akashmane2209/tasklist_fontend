@@ -16,3 +16,6 @@ export const UPDATE_TEAM = "UPDATE_TEAM";
 export const ADD_TASK = "ADD_TASK";
 export const GET_TASKS = "GET_TASKS";
 export const UPDATE_TASK = "UPDATE_TASK";
+
+export const GET_USERS = "GET_USERS";
+export const ADD_USER = "ADD_USER";

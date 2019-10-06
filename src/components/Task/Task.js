@@ -1,24 +1,56 @@
 import React, { Component } from "react";
 import { connect } from "react-redux";
-import { Breadcrumb, Menu, Row, Col, Dropdown, Button, Icon } from "antd";
-
+import {
+  Breadcrumb,
+  Menu,
+  Row,
+  Col,
+  Dropdown,
+  Button,
+  Icon,
+  message
+} from "antd";
+import TaskTable from "./TaskTable";
+import CreateTask from "../Modals/CreateTask";
+import { addTask } from "../../apis/task";
+import { addTaskAction, changeTaskFlagAction } from "../../actions/taskActions";
+import { updateTaskFlag, getTasksByUserId } from "../../apis/task";
 export class Task extends Component {
   state = {
     selectedProject: null,
     visible: false,
-    confirmLoading: false
+    confirmLoading: false,
+    userTasks: []
   };
 
   componentDidMount = async () => {
-    const id = this.props.match.params.id;
-    if (id) {
-      this.setState({ selectedProject: this.props.match.params.id });
+    if (this.props.auth.role) {
+      const id = this.props.match.params.id;
+      if (id) {
+        this.setState({ selectedProject: this.props.match.params.id });
+      }
+    } else {
+      try {
+        const response = await getTasksByUserId(this.props.auth._id);
+        const tasks = response.data.tasks.map(task => {
+          return {
+            ...task,
+            projectName: task.projectId.title
+          };
+        });
+        console.log(tasks);
+        this.setState({ userTasks: tasks });
+      } catch (error) {
+        console.log(error);
+      }
     }
   };
 
   componentWillReceiveProps(nextProps) {
-    if (nextProps.match.params.id !== this.props.match.params.id) {
-      this.setState({ selectedProject: nextProps.match.params.id });
+    if (this.props.auth.role) {
+      if (nextProps.match.params.id !== this.props.match.params.id) {
+        this.setState({ selectedProject: nextProps.match.params.id });
+      }
     }
   }
 
@@ -26,6 +58,83 @@ export class Task extends Component {
     this.setState({
       selectedProject: e.key
     });
+  };
+
+  handleDateChange = dateString => {
+    this.setState({ dateString });
+  };
+  handleUserChange = userId => {
+    this.setState({ userId });
+  };
+
+  handlePriorityChange = priority => {
+    this.setState({ priority });
+  };
+
+  showModal = () => {
+    this.setState({ visible: true });
+  };
+
+  saveFormRef = formRef => {
+    this.formRef = formRef;
+  };
+
+  handleCancel = () => {
+    this.setState({ visible: false });
+  };
+
+  handleCreate = async () => {
+    try {
+      const { form } = this.formRef.props;
+      this.setState({ confirmLoading: true });
+      form.validateFields(async (err, values) => {
+        if (err) {
+          return;
+        }
+        const { userId, dateString, selectedProject, priority } = this.state;
+
+        const { title } = values;
+        const task = {
+          title,
+          assignedTo: userId,
+          projectId: selectedProject,
+          startDate: dateString[0],
+          dueDate: dateString[1],
+          priority
+        };
+        const response = await addTask(task);
+        if (response.status === 201) {
+          this.props.addTaskAction(response.data.task);
+          message.success("Task added successfully");
+          this.setState({
+            visible: false,
+            confirmLoading: false
+          });
+        } else {
+          message.error("Failed to add project");
+          this.setState({
+            confirmLoading: false
+          });
+        }
+      });
+    } catch (error) {
+      console.log(error.response);
+      message.error(error.response.data.message);
+      this.setState({
+        confirmLoading: false
+      });
+    }
+  };
+  markComplete = async record => {
+    try {
+      const response = await updateTaskFlag(record);
+      if (response) {
+        this.props.changeTaskFlagAction(record);
+        message.success("Good Job at completing the task");
+      }
+    } catch (error) {
+      message.error("Update Failed");
+    }
   };
 
   render() {
@@ -37,8 +146,14 @@ export class Task extends Component {
         return task.projectId === selectedProject;
       });
     }
-    console.log(selectedProject);
-    console.log(tempTasks);
+    tempTasks = tempTasks.map(task => {
+      const userName =
+        task.assignedTo[0].firstName + " " + task.assignedTo[0].lastName;
+      return {
+        ...task,
+        userName
+      };
+    });
 
     const menu = (
       <Menu onClick={this.handleMenuClick}>
@@ -59,38 +174,66 @@ export class Task extends Component {
           style={{
             padding: 24,
             background: "#fff",
-            minHeight: "70vh",
+            minHeight: "80vh",
             overflow: "hidden"
           }}
         >
-          <Row className="mb-3">
-            <Col span={24}>
-              <Dropdown
-                overlay={menu}
-                trigger={["click"]}
-                className="float-right btn-success"
-              >
-                <Button type="primary">
-                  Select Project <Icon type="down" />
+          {this.props.auth.role ? (
+            <Row className="mb-3">
+              <Col span={24}>
+                <Button
+                  type="primary"
+                  shape="round"
+                  size="large"
+                  className="float-left"
+                  onClick={this.showModal}
+                >
+                  Add Task
                 </Button>
-              </Dropdown>
-            </Col>
-          </Row>
-          {tempTasks.map(task => {
-            return <h1>{task.title}</h1>;
-          })}
+                <Dropdown
+                  overlay={menu}
+                  trigger={["click"]}
+                  className="float-right btn-success"
+                >
+                  <Button type="primary">
+                    Select Project <Icon type="down" />
+                  </Button>
+                </Dropdown>
+              </Col>
+            </Row>
+          ) : null}
+          {this.props.auth.role ? (
+            <TaskTable tasks={tempTasks} markComplete={this.markComplete} />
+          ) : (
+            <TaskTable
+              tasks={this.state.userTasks}
+              markComplete={this.markComplete}
+            />
+          )}
         </div>
+        <CreateTask
+          wrappedComponentRef={this.saveFormRef}
+          visible={this.state.visible}
+          onCancel={this.handleCancel}
+          onCreate={this.handleCreate}
+          handleUserChange={this.handleUserChange}
+          handlePriorityChange={this.handlePriorityChange}
+          handleDateChange={this.handleDateChange}
+          confirmLoading={this.state.confirmLoading}
+          projectId={this.state.selectedProject}
+        />
       </div>
     );
   }
 }
 
-const mapStateToProps = ({ project, task }) => ({
+const mapStateToProps = ({ project, task, auth }) => ({
   projects: project.project,
-  tasks: task.task
+  tasks: task.task,
+  auth: auth.user
 });
 
 export default connect(
   mapStateToProps,
-  null
+  { addTaskAction, changeTaskFlagAction }
 )(Task);

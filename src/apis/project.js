@@ -24,3 +24,13 @@ export const createProject = async project => {
   });
   return response;
 };
+
+export const getAllProjectsByTeamId = async teamId => {
+  const token = getAuthToken();
+  const response = await axios.get(`${apiUrl}/project/team/${teamId}`, {
+    headers: {
+      Authorization: token
+    }
+  });
+  return response;
+};

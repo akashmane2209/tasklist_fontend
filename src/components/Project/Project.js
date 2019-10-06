@@ -12,16 +12,31 @@ import {
 } from "antd";
 import CreateProjectForm from "../Modals/CreateProject";
 import { createProject } from "../../apis/project";
+import { getAllProjectsByTeamId } from "../../apis/project";
+
 import { addProjectAction } from "../../actions/projectActions";
 class Project extends Component {
   state = {
     selectedWorkspace: null,
     visible: false,
-    confirmLoading: false
+    confirmLoading: false,
+    userProjects: []
   };
-  componentDidMount() {
-    if (this.props.match.params.id) {
-      this.setState({ selectedWorkspace: this.props.match.params.id });
+  async componentDidMount() {
+    if (this.props.user.role) {
+      console.log("admin here");
+      if (this.props.match.params.id) {
+        this.setState({ selectedWorkspace: this.props.match.params.id });
+      }
+    } else {
+      try {
+        const response = await getAllProjectsByTeamId(
+          this.props.user.teamId._id
+        );
+        this.setState({ userProjects: response.data.projects });
+      } catch (error) {
+        console.log(error);
+      }
     }
   }
 
@@ -57,6 +72,7 @@ class Project extends Component {
           title,
           workspaceId: selectedWorkspace,
           teamId,
+          userId: this.props.user._id,
           startDate: dateString[0],
           dueDate: dateString[1]
         };
@@ -94,8 +110,9 @@ class Project extends Component {
   };
 
   navigateTo = event => {
-    console.log();
-    this.props.history.push(`/dashboard/project/${event.target.id}`);
+    this.props.user.role
+      ? this.props.history.push(`/dashboard/project/${event.target.id}`)
+      : message.info("Permission denied visit My Tasks for More Info");
   };
 
   render() {
@@ -128,58 +145,89 @@ class Project extends Component {
           style={{
             padding: 24,
             background: "#fff",
-            minHeight: "70vh",
+            minHeight: "80vh",
             overflow: "hidden"
           }}
         >
-          <Row className="mb-3">
-            <Col span={24}>
-              <Dropdown
-                overlay={menu}
-                trigger={["click"]}
-                className="float-right btn-success"
-              >
-                <Button type="primary">
-                  Select Workspace <Icon type="down" />
-                </Button>
-              </Dropdown>
-            </Col>
-          </Row>
+          {this.props.user.role ? (
+            <Row className="mb-3">
+              <Col span={24}>
+                <Dropdown
+                  overlay={menu}
+                  trigger={["click"]}
+                  className="float-right btn-success"
+                >
+                  <Button type="primary">
+                    Select Workspace <Icon type="down" />
+                  </Button>
+                </Dropdown>
+              </Col>
+            </Row>
+          ) : null}
           <Row>
             <Col>
-              <Button
-                style={{
-                  minWidth: 200,
-                  minHeight: 100,
-                  marginRight: 20,
-                  marginBottom: 20
-                }}
-                type="dashed"
-                onClick={this.showModal}
-              >
-                <p>Create New Project</p>
-              </Button>
-              {tempProjects.map(project => {
-                return (
-                  <Button
-                    key={project._id}
-                    id={project._id}
-                    style={{
-                      minWidth: 200,
-                      minHeight: 100,
-                      marginRight: 20,
-                      marginBottom: 20
-                    }}
-                    onClick={this.navigateTo}
-                    className="btn-success"
-                  >
-                    <span>
-                      <p>{project.title}</p>
-                      {/* <Link to={"/workspace" + workspace._id} /> */}
-                    </span>
-                  </Button>
-                );
-              })}
+              {this.state.selectedWorkspace ? (
+                <Button
+                  style={{
+                    minWidth: 200,
+                    minHeight: 100,
+                    marginRight: 20,
+                    marginBottom: 20
+                  }}
+                  type="dashed"
+                  onClick={this.showModal}
+                >
+                  <p>Create New Project</p>
+                </Button>
+              ) : null}
+
+              {this.props.user.role ? (
+                tempProjects.map(project => {
+                  return (
+                    <Button
+                      key={project._id}
+                      id={project._id}
+                      style={{
+                        minWidth: 200,
+                        minHeight: 100,
+                        marginRight: 20,
+                        marginBottom: 20
+                      }}
+                      onClick={this.navigateTo}
+                      className="btn-success"
+                    >
+                      <span>
+                        <p>{project.title}</p>
+                        {/* <Link to={"/workspace" + workspace._id} /> */}
+                      </span>
+                    </Button>
+                  );
+                })
+              ) : this.state.userProjects.length > 0 ? (
+                this.state.userProjects.map(project => {
+                  return (
+                    <Button
+                      key={project._id}
+                      id={project._id}
+                      style={{
+                        minWidth: 200,
+                        minHeight: 100,
+                        marginRight: 20,
+                        marginBottom: 20
+                      }}
+                      onClick={this.navigateTo}
+                      className="btn-success"
+                    >
+                      <span>
+                        <p>{project.title}</p>
+                        {/* <Link to={"/workspace" + workspace._id} /> */}
+                      </span>
+                    </Button>
+                  );
+                })
+              ) : (
+                <p>No Projects Assigned</p>
+              )}
             </Col>
           </Row>
 
@@ -198,9 +246,10 @@ class Project extends Component {
   }
 }
 
-const mapStateToProps = ({ project, workspace }) => ({
+const mapStateToProps = ({ project, workspace, auth }) => ({
   projects: project.project,
-  workspaces: workspace.workspace
+  workspaces: workspace.workspace,
+  user: auth.user
 });
 
 export default connect(

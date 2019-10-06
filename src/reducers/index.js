@@ -4,10 +4,15 @@ import workspaceReducer from "./workspaceReducer";
 import projectReducer from "./projectReducer";
 import teamReducer from "./teamReducer";
 import taskReducer from "./taskReducer";
+import userReducer from "./userReducer";
+import endUserReducer from "./endUserReducer";
+
 export default combineReducers({
   auth: authReducer,
   workspace: workspaceReducer,
   project: projectReducer,
   team: teamReducer,
-  task: taskReducer
+  task: taskReducer,
+  user: userReducer,
+  endUser: endUserReducer
 });

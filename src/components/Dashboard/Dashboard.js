@@ -17,34 +17,48 @@ import { logoutAction } from "../../actions/authActions";
 import { getAllWorkspaces } from "../../apis/workspace";
 import { getAllWorkSpacesAction } from "../../actions/workspaceActions";
 
-import { getAllPorjects } from "../../apis/project";
+import { getAllPorjects, getAllProjectsByTeamId } from "../../apis/project";
 import { getAllProjectsAction } from "../../actions/projectActions";
-
+import { getUserProjectsActions } from "../../actions/endUserActions";
 import { getAllTeams } from "../../apis/team";
 import { getAllTeamsAction } from "../../actions/teamActions";
 
 import { getAllTasksAction } from "../../actions/taskActions";
 import { getAllTasks } from "../../apis/task";
 
+import { getAllUsersActions } from "../../actions/userActions";
+import { getAllUsers } from "../../apis/user";
+
 import Task from "../Task/Task";
+import TeamDetail from "../TeamDetail/TeamDetail";
+import AddUser from "../AddUser/AddUser";
+
 const { Header, Content, Footer, Sider } = Layout;
 const { SubMenu } = Menu;
 
 class Dashboard extends Component {
   state = {
     collapsed: false,
-    loginCollapse: false
+    loginCollapse: false,
+    userProjects: []
   };
 
   componentDidMount = async () => {
-    let response = await getAllWorkspaces();
-    this.props.getAllWorkSpacesAction(response.data.workspaces);
-    response = await getAllPorjects();
-    this.props.getAllProjectsAction(response.data.projects);
-    response = await getAllTeams();
-    this.props.getAllTeamsAction(response.data.teams);
-    response = await getAllTasks();
-    this.props.getAllTasksAction(response.data.tasks);
+    const user = this.props.user;
+    if (user.role) {
+      let response = await getAllWorkspaces();
+      this.props.getAllWorkSpacesAction(response.data.workspaces);
+      response = await getAllPorjects();
+      this.props.getAllProjectsAction(response.data.projects);
+      response = await getAllTeams();
+      this.props.getAllTeamsAction(response.data.teams);
+      response = await getAllTasks();
+      this.props.getAllTasksAction(response.data.tasks);
+      response = await getAllUsers();
+      this.props.getAllUsersActions(response.data.users);
+    } else {
+      this.props.history.push("/dashboard/project");
+    }
   };
 
   handleMenuClick = e => {
@@ -97,65 +111,99 @@ class Dashboard extends Component {
           >
             <Icon type={this.state.collapsed ? "menu-unfold" : "menu-fold"} />
           </Button>
-          <Menu
-            defaultSelectedKeys={["workspaces"]}
-            defaultOpenKeys={["workspaces"]}
-            mode="inline"
-            theme="dark"
-          >
-            <SubMenu
-              onTitleClick={this.navigateTo}
-              key="workspaces"
-              title={
-                <span>
-                  <Icon type="slack" />
-                  <span>Workspaces</span>
-                </span>
-              }
+          {this.props.user.role ? (
+            <Menu
+              defaultSelectedKeys={["workspaces"]}
+              defaultOpenKeys={["workspaces"]}
+              mode="inline"
+              theme="dark"
             >
-              {this.props.workspaces.map(workspace => {
-                return (
-                  <Menu.Item key={workspace._id}>
-                    <span>{workspace.title}</span>
-                    <Link to={"/dashboard/workspace/" + workspace._id} />
-                  </Menu.Item>
-                );
-              })}
-            </SubMenu>
-            <SubMenu
-              onTitleClick={this.navigateTo}
-              key="projects"
-              title={
-                <span>
-                  <Icon type="branches" />
-                  <span>Projects</span>
-                </span>
-              }
-            >
-              {this.props.projects.map(project => {
-                return (
-                  <Menu.Item key={project._id}>
-                    <span>{project.title}</span>
-                    <Link to={"/dashboard/project/" + project._id} />
-                  </Menu.Item>
-                );
-              })}
-            </SubMenu>
+              <SubMenu
+                onTitleClick={this.navigateTo}
+                key="workspaces"
+                title={
+                  <span>
+                    <Icon type="slack" />
+                    <span>Workspaces</span>
+                  </span>
+                }
+              >
+                {this.props.workspaces.map(workspace => {
+                  return (
+                    <Menu.Item key={workspace._id}>
+                      <span>{workspace.title}</span>
+                      <Link to={"/dashboard/workspace/" + workspace._id} />
+                    </Menu.Item>
+                  );
+                })}
+              </SubMenu>
+              <SubMenu
+                onTitleClick={this.navigateTo}
+                key="projects"
+                title={
+                  <span>
+                    <Icon type="branches" />
+                    <span>Projects</span>
+                  </span>
+                }
+              >
+                {this.props.projects.map(project => {
+                  return (
+                    <Menu.Item key={project._id}>
+                      <span>{project.title}</span>
+                      <Link to={"/dashboard/project/" + project._id} />
+                    </Menu.Item>
+                  );
+                })}
+              </SubMenu>
 
-            <SubMenu
-              onTitleClick={this.navigateTo}
-              key="teams"
-              title={
-                <span>
-                  <Icon type="team" />
-                  <span>Teams</span>
-                </span>
-              }
+              <SubMenu
+                onTitleClick={this.navigateTo}
+                key="teams"
+                title={
+                  <span>
+                    <Icon type="team" />
+                    <span>Teams</span>
+                  </span>
+                }
+              >
+                {this.props.teams.map(team => {
+                  return (
+                    <Menu.Item key={team._id}>
+                      <span>{team.title}</span>
+                      <Link to={"/dashboard/team/" + team._id} />
+                    </Menu.Item>
+                  );
+                })}
+              </SubMenu>
+              <Menu.Item>
+                <span>Add User</span>
+                <Link to="/dashboard/adduser" />
+              </Menu.Item>
+            </Menu>
+          ) : (
+            <Menu
+              mode="inline"
+              theme="dark"
+              defaultSelectedKeys={["myProjects"]}
             >
-              <Menu.Item key="5">Team 1</Menu.Item>
-              <Menu.Item key="6">Team 2</Menu.Item>
-            </SubMenu>
-          </Menu>
+              <Menu.Item key="myProjects">
+                <Icon type="branches" />
+                <span>My Projects</span>
+                <Link to="/dashboard/project" />
+              </Menu.Item>
+              <Menu.Item>
+                <Icon type="team" />
+                <span>My Team</span>
+                <Link to="/dashboard/team/my" />
+              </Menu.Item>
+              <Menu.Item>
+                <Icon type="check" />
+                <span>My Tasks</span>
+                <Link to="/dashboard/mytask" />
+              </Menu.Item>
+            </Menu>
+          )}
         </Sider>
         <Layout>
           <Header style={{ background: "#fff", padding: 0 }}>
@@ -186,6 +234,11 @@ class Dashboard extends Component {
               <Route exact path="/dashboard/team" component={Team} />
               <Route path="/dashboard/workspace/:id" component={Project} />
               <Route path="/dashboard/project/:id" component={Task} />
+              <Route path="/dashboard/team/:id" component={TeamDetail} />
+              <Route path="/dashboard/adduser" component={AddUser} />
+
+              <Route exact path="dashboard/team/my" component={TeamDetail} />
+              <Route path="/dashboard/mytask" component={Task} />
             </Switch>
           </Content>
 
@@ -198,9 +251,11 @@ class Dashboard extends Component {
   }
 }
 
-const mapStateToProps = ({ workspace, project }) => ({
+const mapStateToProps = ({ workspace, project, team, auth }) => ({
   workspaces: workspace.workspace,
-  projects: project.project
+  projects: project.project,
+  teams: team.team,
+  user: auth.user
 });
 
 export default connect(
@@ -210,6 +265,8 @@ export default connect(
     getAllWorkSpacesAction,
     getAllProjectsAction,
     getAllTeamsAction,
-    getAllTasksAction
+    getAllTasksAction,
+    getAllUsersActions,
+    getUserProjectsActions
   }
 )(Dashboard);

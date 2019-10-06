@@ -79,7 +79,7 @@ class Workspace extends Component {
           style={{
             padding: 24,
             background: "#fff",
-            minHeight: "70vh",
+            minHeight: "80vh",
             overflow: "hidden"
           }}
         >
@@ -111,7 +111,7 @@ class Workspace extends Component {
               >
                 <span>
                   <p>{workspace.title}</p>
-                  <Link to={"/workspace" + workspace._id} />
+                  {/* <Link to={"/workspace" + workspace._id} /> */}
                 </span>
               </Button>
             );

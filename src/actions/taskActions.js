@@ -13,3 +13,10 @@ export const addTaskAction = task => async dispatch => {
     payload: task
   });
 };
+
+export const changeTaskFlagAction = taskId => async dispatch => {
+  dispatch({
+    type: "CHANGE_FLAG",
+    payload: taskId
+  });
+};
