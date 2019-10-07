@@ -6,6 +6,7 @@ import teamReducer from "./teamReducer";
 import taskReducer from "./taskReducer";
 import userReducer from "./userReducer";
 import endUserReducer from "./endUserReducer";
+import messageReducer from "./messageReducer";
 
 export default combineReducers({
   auth: authReducer,
@@ -14,5 +15,6 @@ export default combineReducers({
   team: teamReducer,
   task: taskReducer,
   user: userReducer,
-  endUser: endUserReducer
+  endUser: endUserReducer,
+  message: messageReducer
 });

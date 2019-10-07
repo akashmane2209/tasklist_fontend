@@ -31,6 +31,10 @@ import { getAllUsers } from "../../apis/user";
 
 import Task from "../Task/Task";
 import TeamDetail from "../TeamDetail/TeamDetail";
+
+import { getAllMessages } from "../../apis/message";
+import { getAllMessagesAction } from "../../actions/messageActions";
+
 import AddUser from "../AddUser/AddUser";
 
 const { Header, Content, Footer, Sider } = Layout;
@@ -44,6 +48,7 @@ class Dashboard extends Component {
   };
 
   componentDidMount = async () => {
+    this.getAllMessages();
     const user = this.props.user;
     if (user.role) {
       let response = await getAllWorkspaces();
@@ -58,6 +63,15 @@ class Dashboard extends Component {
       this.props.getAllUsersActions(response.data.users);
     } else {
       this.props.history.push("/dashboard/project");
+    }
+  };
+
+  getAllMessages = async () => {
+    try {
+      const response = await getAllMessages();
+      this.props.getAllMessagesAction(response.data.messages);
+    } catch (error) {
+      console.log(error);
     }
   };
 
@@ -267,6 +281,7 @@ export default connect(
     getAllTeamsAction,
     getAllTasksAction,
     getAllUsersActions,
-    getUserProjectsActions
+    getUserProjectsActions,
+    getAllMessagesAction
   }
 )(Dashboard);

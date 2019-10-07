@@ -2,17 +2,30 @@ import React, { Component } from "react";
 import { connect } from "react-redux";
 import { Table, Tag, Button } from "antd";
 
+import ShowMessages from "../Modals/ShowMessges";
+
 export class TaskTable extends Component {
   state = {
-    filteredInfo: null,
-    sortedInfo: null
+    visible: false,
+    taskId: ""
   };
+
+  componentDidMount() {}
+
   handleChange = (pagination, filters, sorter) => {
     this.setState({
       filteredInfo: filters,
       sortedInfo: sorter
     });
   };
+
+  showModal = record => {
+    this.setState({ visible: true, taskId: record });
+  };
+  handleCancel = () => {
+    this.setState({ visible: false });
+  };
+
   assigned = this.props.auth.role
     ? {
         title: "Assigned To",
@@ -81,12 +94,32 @@ export class TaskTable extends Component {
       render: record => {
         return record.flag === 0 ? (
           <p>Completed</p>
-        ) : (
+        ) : record.assignedTo[0]._id === this.props.auth._id ? (
           <Button
             type="link"
             onClick={() => this.props.markComplete(record._id)}
           >
             Mark As Completed
+          </Button>
+        ) : (
+          <Button
+            type="link"
+            disabled={true}
+            onClick={() => this.props.markComplete(record._id)}
+          >
+            Mark As Completed
+          </Button>
+        );
+      }
+    },
+    {
+      title: "Messages",
+      dataIndex: "",
+      key: "y",
+      render: record => {
+        return (
+          <Button type="link" onClick={() => this.showModal(record._id)}>
+            Show Messages
           </Button>
         );
       }
@@ -100,6 +133,11 @@ export class TaskTable extends Component {
           columns={this.columns}
           dataSource={this.props.tasks}
           onChange={this.handleChange}
+        />
+        <ShowMessages
+          visible={this.state.visible}
+          onCancel={this.handleCancel}
+          taskId={this.state.taskId}
         />
       </div>
     );
