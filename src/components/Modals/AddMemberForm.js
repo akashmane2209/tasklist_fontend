@@ -17,8 +17,8 @@ const CreateProjectForm = Form.create({ name: "form_in_modal" })(
       return (
         <Modal
           visible={visible}
-          title="Create a new workspace"
-          okText="Create"
+          title="Create a new member"
+          okText="Add Member"
           onCancel={onCancel}
           onOk={onCreate}
           confirmLoading={confirmLoading}

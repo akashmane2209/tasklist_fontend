@@ -36,6 +36,7 @@ import { getAllMessages } from "../../apis/message";
 import { getAllMessagesAction } from "../../actions/messageActions";
 
 import AddUser from "../AddUser/AddUser";
+import Profile from "../Profile/Profile";
 
 const { Header, Content, Footer, Sider } = Layout;
 const { SubMenu } = Menu;
@@ -56,6 +57,7 @@ class Dashboard extends Component {
       response = await getAllPorjects();
       this.props.getAllProjectsAction(response.data.projects);
       response = await getAllTeams();
+      console.log(response.data);
       this.props.getAllTeamsAction(response.data.teams);
       response = await getAllTasks();
       this.props.getAllTasksAction(response.data.tasks);
@@ -81,9 +83,17 @@ class Dashboard extends Component {
     this.props.logoutAction();
     this.props.history.push("/login");
   };
+  handleProfileClick = e => {
+    this.props.history.push("/dashboard/profile");
+  };
   menu = (
-    <Menu onClick={this.handleMenuClick}>
-      <Menu.Item>
+    <Menu>
+      <Menu.Item onClick={this.handleProfileClick}>
+        <span>
+          <p>Profile</p>
+        </span>
+      </Menu.Item>
+      <Menu.Item onClick={this.handleMenuClick}>
         <span>
           <p>Logout</p>
         </span>
@@ -191,6 +201,7 @@ class Dashboard extends Component {
                 })}
               </SubMenu>
               <Menu.Item>
+                <Icon type="user" />
                 <span>Add User</span>
                 <Link to="/dashboard/adduser" />
               </Menu.Item>
@@ -222,7 +233,10 @@ class Dashboard extends Component {
         <Layout>
           <Header style={{ background: "#fff", padding: 0 }}>
             <Row>
-              <Col span={12}>
+              <Col span={1} className="ml-3 mr-3">
+                <img src={require("../../assets/list.png")} height="50" />
+              </Col>
+              <Col span={10}>
                 <h3 className="p-3">TASKLIST</h3>
               </Col>
               <Col span={12}>
@@ -253,6 +267,7 @@ class Dashboard extends Component {
 
               <Route exact path="dashboard/team/my" component={TeamDetail} />
               <Route path="/dashboard/mytask" component={Task} />
+              <Route path="/dashboard/profile" component={Profile} />
             </Switch>
           </Content>
 

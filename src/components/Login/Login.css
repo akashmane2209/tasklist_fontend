@@ -123,3 +123,7 @@ div.content {
   flex-direction: row;
   justify-content: space-between;
 }
+
+.logo {
+  filter: drop-shadow(-5px 5px 5px #222);
+}

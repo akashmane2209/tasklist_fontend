@@ -61,14 +61,16 @@ class Login extends Component {
       showLogin = (
         <div style={{ fontFamily: "Montserrat" }}>
           <div className="loginSidebar">
-            <Row>
-              <Col>
-                <h2
-                  className="text-center ml-3 mt-2"
-                  style={{ color: "white" }}
-                >
-                  TASKLIST
-                </h2>
+            <Row className="ml-5">
+              <Col lg={2} className="ml-3 mt-3">
+                <img
+                  className="logo"
+                  src={require("../../assets/list.png")}
+                  height="50"
+                />
+              </Col>
+              <Col className="mt-4">
+                <h3 style={{ color: "white" }}>TASKLIST</h3>
               </Col>
             </Row>
             <Row

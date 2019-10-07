@@ -64,10 +64,12 @@ class Project extends Component {
       this.setState({ confirmLoading: true });
       form.validateFields(async (err, values) => {
         if (err) {
+          this.setState({ confirmLoading: false });
           return;
         }
         const { title } = values;
         const { teamId, dateString, selectedWorkspace } = this.state;
+
         const project = {
           title,
           workspaceId: selectedWorkspace,
@@ -77,7 +79,8 @@ class Project extends Component {
           dueDate: dateString[1]
         };
         const response = await createProject(project);
-        if (response) {
+        console.log(response.data);
+        if (response.data.project) {
           this.props.addProjectAction(response.data.project);
           message.success("Project added successfully");
           this.setState({
@@ -85,13 +88,14 @@ class Project extends Component {
             confirmLoading: false
           });
         } else {
-          message.error("Failed to add project");
+          message.error(response.data.message);
           this.setState({
             confirmLoading: false
           });
         }
       });
     } catch (error) {
+      console.log("Error");
       console.log(error.message);
       message.error(error.data.message);
     }

@@ -38,7 +38,25 @@ export class Task extends Component {
             projectName: task.projectId.title
           };
         });
-        console.log(tasks);
+        tasks = tasks.map(task => {
+          const seconds = Date.now();
+          const currentDate = new Date(seconds);
+          const dueDate = new Date(task.dueDate);
+          const startDate = new Date(task.startDate);
+          if (
+            currentDate > startDate &&
+            currentDate < dueDate &&
+            task.priority !== "Completed"
+          ) {
+            task.flag = 2;
+          } else if (currentDate < startDate && task.priority !== "Completed") {
+            task.flag = 1;
+          } else if (currentDate > dueDate && task.priority !== "Completed") {
+            task.flag = 3;
+            task.priority = "High";
+          }
+          return task;
+        });
         this.setState({ userTasks: tasks });
       } catch (error) {
         console.log(error);
@@ -111,7 +129,7 @@ export class Task extends Component {
             confirmLoading: false
           });
         } else {
-          message.error("Failed to add project");
+          message.error(response.data.message);
           this.setState({
             confirmLoading: false
           });

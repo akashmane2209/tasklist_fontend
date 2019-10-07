@@ -18,7 +18,7 @@ export default (state = defaultState, actions) => {
     case "CHANGE_FLAG":
       let tasks = [...state.task];
       let task = tasks.find(task => task._id === actions.payload);
-      task = { ...task, flag: 0 };
+      task = { ...task, flag: 0, priority: "Completed" };
       tasks = state.task.map(t => {
         return t._id === task._id ? task : t;
       });
