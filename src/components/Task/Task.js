@@ -32,7 +32,7 @@ export class Task extends Component {
     } else {
       try {
         const response = await getTasksByUserId(this.props.auth._id);
-        const tasks = response.data.tasks.map(task => {
+        let tasks = response.data.tasks.map(task => {
           return {
             ...task,
             projectName: task.projectId.title
@@ -147,7 +147,48 @@ export class Task extends Component {
     try {
       const response = await updateTaskFlag(record);
       if (response) {
-        this.props.changeTaskFlagAction(record);
+        if (this.props.auth.role) {
+          this.props.changeTaskFlagAction(record);
+        } else {
+          try {
+            const response = await getTasksByUserId(this.props.auth._id);
+            let tasks = response.data.tasks.map(task => {
+              return {
+                ...task,
+                projectName: task.projectId.title
+              };
+            });
+            tasks = tasks.map(task => {
+              const seconds = Date.now();
+              const currentDate = new Date(seconds);
+              const dueDate = new Date(task.dueDate);
+              const startDate = new Date(task.startDate);
+              if (
+                currentDate > startDate &&
+                currentDate < dueDate &&
+                task.priority !== "Completed"
+              ) {
+                task.flag = 2;
+              } else if (
+                currentDate < startDate &&
+                task.priority !== "Completed"
+              ) {
+                task.flag = 1;
+              } else if (
+                currentDate > dueDate &&
+                task.priority !== "Completed"
+              ) {
+                task.flag = 3;
+                task.priority = "High";
+              }
+              return task;
+            });
+            this.setState({ userTasks: tasks });
+          } catch (error) {
+            console.log(error);
+          }
+        }
+
         message.success("Good Job at completing the task");
       }
     } catch (error) {

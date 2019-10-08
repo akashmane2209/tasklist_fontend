@@ -20,7 +20,8 @@ class Project extends Component {
     selectedWorkspace: null,
     visible: false,
     confirmLoading: false,
-    userProjects: []
+    userProjects: [],
+    loading: false
   };
   async componentDidMount() {
     if (this.props.user.role) {
@@ -30,10 +31,13 @@ class Project extends Component {
       }
     } else {
       try {
+        this.setState({ loading: true });
         const response = await getAllProjectsByTeamId(
-          this.props.user.teamId._id
+          localStorage.getItem("teamId")
         );
         this.setState({ userProjects: response.data.projects });
+
+        this.setState({ loading: false });
       } catch (error) {
         console.log(error);
       }
@@ -153,6 +157,7 @@ class Project extends Component {
             overflow: "hidden"
           }}
         >
+          {this.state.loading ? <p>Loading</p> : null}
           {this.props.user.role ? (
             <Row className="mb-3">
               <Col span={24}>

@@ -1,6 +1,6 @@
 import React, { Component } from "react";
 //MODULES
-import { Link, Switch, Route } from "react-router-dom";
+import { Link, Switch, Route, Redirect } from "react-router-dom";
 import { connect } from "react-redux";
 
 //UI
@@ -17,7 +17,7 @@ import { logoutAction } from "../../actions/authActions";
 import { getAllWorkspaces } from "../../apis/workspace";
 import { getAllWorkSpacesAction } from "../../actions/workspaceActions";
 
-import { getAllPorjects, getAllProjectsByTeamId } from "../../apis/project";
+import { getAllPorjects } from "../../apis/project";
 import { getAllProjectsAction } from "../../actions/projectActions";
 import { getUserProjectsActions } from "../../actions/endUserActions";
 import { getAllTeams } from "../../apis/team";
@@ -45,7 +45,8 @@ class Dashboard extends Component {
   state = {
     collapsed: false,
     loginCollapse: false,
-    userProjects: []
+    userProjects: [],
+    isAdmin: true
   };
 
   componentDidMount = async () => {
@@ -63,8 +64,9 @@ class Dashboard extends Component {
       this.props.getAllTasksAction(response.data.tasks);
       response = await getAllUsers();
       this.props.getAllUsersActions(response.data.users);
+      this.setState({ isAdmin: true });
     } else {
-      this.props.history.push("/dashboard/project");
+      this.setState({ isAdmin: false });
     }
   };
 
@@ -275,6 +277,7 @@ class Dashboard extends Component {
             Ant Design ©2018 Created by Ant UED
           </Footer>
         </Layout>
+        {this.state.isAdmin ? null : <Redirect to="/dashboard/project" />}
       </Layout>
     );
   }

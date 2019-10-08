@@ -16,6 +16,7 @@ export const loginAction = (user, token) => async dispatch => {
 export const logoutAction = () => async dispatch => {
   try {
     deleteUser();
+    localStorage.removeItem("teamId");
     dispatch({
       type: LOGOUT
     });

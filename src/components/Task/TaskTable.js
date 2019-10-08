@@ -7,7 +7,9 @@ import ShowMessages from "../Modals/ShowMessges";
 export class TaskTable extends Component {
   state = {
     visible: false,
-    taskId: ""
+    taskId: "",
+    filteredInfo: null,
+    sortedInfo: null
   };
 
   componentDidMount() {}
@@ -64,7 +66,8 @@ export class TaskTable extends Component {
     {
       title: "Status",
       dataIndex: "flag",
-      sorter: (a, b) => a.flag > b.flag,
+      sorter: (a, b) => a.flag < b.flag,
+      sortDirections: ["ascend"],
       render: number => {
         if (number === 1) {
           return <Tag color="#f0ad4e">Pending</Tag>;
@@ -80,6 +83,12 @@ export class TaskTable extends Component {
     {
       title: "Start Date",
       dataIndex: "startDate",
+      sorter: (a, b) => {
+        const date1 = new Date(a.startDate);
+        const date2 = new Date(b.startDate);
+        return date1 > date2;
+      },
+      sortDirections: ["ascend"],
       render: text => <p>{text.substring(0, 10)}</p>
     },
     {

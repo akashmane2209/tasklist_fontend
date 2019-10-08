@@ -44,6 +44,7 @@ class Login extends Component {
         const response = await loginUser(credentials);
         const { user, token } = response.data;
         this.props.loginAction(user, token);
+        localStorage.setItem("teamId", user.teamId);
         this.props.history.push("/dashboard/workspace");
         message.success("Login Successful");
       } catch (e) {
